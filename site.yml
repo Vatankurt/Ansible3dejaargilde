@@ -1,11 +1,38 @@
 ---
-
 - hosts: all
   become: true
   tasks:
-    - name: install mariadb server
+    - name: Install MariaDB server on Almalinux
       apt:
         name: mariadb-server
         state: latest
       when: ansible_distribution == "Almalinux"
 
+    - name: Install Apache and PHP for Debian servers
+      apt:
+        name:
+          - apache2
+          - libapache2-mod-php
+        state: latest
+      when: ansible_distribution == "Debian"
+
+    - name: Ensure /var/www/html directory exists
+      file:
+        path: files
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      check_mode: no  # Skip checking the current state
+
+    - name: Copy hello.php to /var/www/html
+      tags:
+        - apache
+        - apache2
+        - httpd
+      copy:
+        src: files/
+        dest: /var/www/html
+        owner: root
+        group: root
+        mode: "0644"
